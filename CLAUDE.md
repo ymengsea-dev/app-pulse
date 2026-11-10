@@ -13,7 +13,13 @@ swift test --package-path Packages/AppPulseKit   # all unit tests
 xcodegen generate                                # regenerate AppPulse.xcodeproj
 xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -configuration Debug -derivedDataPath build build
 open build/Build/Products/Debug/AppPulse.app
+
+# Installer DMG (needs Finder running; no volume named AppPulse mounted)
+xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -configuration Release -derivedDataPath build build
+scripts/dmg/make-dmg.sh build/Build/Products/Release/AppPulse.app build/AppPulse-<version>.dmg
 ```
+
+The DMG window background is drawn by `scripts/dmg/make_background.py` with the `hand-drawn-matte-vector` skill's `handdrawn.py`. Export `background.png` (660 px wide) and `background@2x.png` (1320 px) with the skill's `export.py`. Icon positions in `make-dmg.sh` must match the background. Builds are ad-hoc signed and not notarized, so Gatekeeper blocks them on other Macs until the user clicks Open Anyway in Privacy & Security.
 
 ## Architecture
 
