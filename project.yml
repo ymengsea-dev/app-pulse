@@ -1,0 +1,45 @@
+name: AppPulse
+options:
+  bundleIdPrefix: local.apppulse
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+packages:
+  AppPulseKit:
+    path: Packages/AppPulseKit
+targets:
+  AppPulse:
+    type: application
+    platform: macOS
+    sources:
+      - App
+    dependencies:
+      - package: AppPulseKit
+        product: Application
+      - package: AppPulseKit
+        product: Platform
+      - package: AppPulseKit
+        product: Presentation
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.apppulse.AppPulse
+        SWIFT_VERSION: "6.0"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: AppPulse
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_HARDENED_RUNTIME: NO
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+schemes:
+  AppPulse:
+    build:
+      targets:
+        AppPulse: all
+    run:
+      config: Debug
