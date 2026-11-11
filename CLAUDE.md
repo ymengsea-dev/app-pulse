@@ -14,12 +14,11 @@ xcodebuild test -project AppPulse.xcodeproj -scheme AppPulse    # all unit tests
 xcodebuild -project AppPulse.xcodeproj -scheme AppPulse build
 open "$(xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -showBuildSettings 2>/dev/null | sed -n 's/^ *BUILT_PRODUCTS_DIR = //p')/AppPulse.app"
 
-# Installer DMG (needs Finder running; no volume named AppPulse mounted)
-xcodebuild archive -project AppPulse.xcodeproj -scheme AppPulse -configuration Release -archivePath build/AppPulse.xcarchive
-scripts/dmg/make-dmg.sh build/AppPulse.xcarchive/Products/Applications/AppPulse.app dist/AppPulse-<version>.dmg
+# Release DMG (needs Finder running; no volume named AppPulse mounted)
+scripts/release.sh patch    # or minor, major; no part rebuilds the current version
 ```
 
-Build caches go to Xcode's default DerivedData, outside the repo. `build/` holds only the release archive and `dist/` only the DMG. Both are ignored by git.
+Build caches go to Xcode's default DerivedData, outside the repo. `scripts/release.sh` bumps `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`, runs the tests, archives into a temporary folder, and writes `build/<version>/AppPulse-<version>.dmg`, then deletes the archive. It stops if `build/<version>/` already exists. Commit the version bump after a release. `build/` is ignored by git.
 
 The DMG window background is drawn by `scripts/dmg/make_background.py` with the `hand-drawn-matte-vector` skill's `handdrawn.py`. Export `background.png` (660 px wide) and `background@2x.png` (1320 px) with the skill's `export.py`. Icon positions in `make-dmg.sh` must match the background. Builds are ad-hoc signed and not notarized, so Gatekeeper blocks them on other Macs until the user clicks Open Anyway in Privacy & Security.
 

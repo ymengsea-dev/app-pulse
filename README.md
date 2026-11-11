@@ -19,6 +19,14 @@ xcodegen generate
 xcodebuild test -project AppPulse.xcodeproj -scheme AppPulse
 ```
 
+## Release
+
+Finder has to be running, and no volume named AppPulse can be mounted.
+
+```sh
+scripts/release.sh patch   # or minor, major: bump version, test, archive, DMG → build/<version>/
+```
+
 ## Limits
 
 - Some figures come from macOS data that is not a public API, so a macOS update can make a metric show "not available".
