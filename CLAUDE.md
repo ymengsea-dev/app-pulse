@@ -10,14 +10,16 @@ Swift 6 with strict concurrency, SwiftUI, AppKit (icons, quitting apps), macOS 1
 
 ```sh
 xcodegen generate                                # regenerate AppPulse.xcodeproj
-xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -derivedDataPath build test   # all unit tests
-xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -configuration Debug -derivedDataPath build build
-open build/Build/Products/Debug/AppPulse.app
+xcodebuild test -project AppPulse.xcodeproj -scheme AppPulse    # all unit tests
+xcodebuild -project AppPulse.xcodeproj -scheme AppPulse build
+open "$(xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -showBuildSettings 2>/dev/null | sed -n 's/^ *BUILT_PRODUCTS_DIR = //p')/AppPulse.app"
 
 # Installer DMG (needs Finder running; no volume named AppPulse mounted)
-xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -configuration Release -derivedDataPath build build
-scripts/dmg/make-dmg.sh build/Build/Products/Release/AppPulse.app build/AppPulse-<version>.dmg
+xcodebuild archive -project AppPulse.xcodeproj -scheme AppPulse -configuration Release -archivePath build/AppPulse.xcarchive
+scripts/dmg/make-dmg.sh build/AppPulse.xcarchive/Products/Applications/AppPulse.app dist/AppPulse-<version>.dmg
 ```
+
+Build caches go to Xcode's default DerivedData, outside the repo. `build/` holds only the release archive and `dist/` only the DMG. Both are ignored by git.
 
 The DMG window background is drawn by `scripts/dmg/make_background.py` with the `hand-drawn-matte-vector` skill's `handdrawn.py`. Export `background.png` (660 px wide) and `background@2x.png` (1320 px) with the skill's `export.py`. Icon positions in `make-dmg.sh` must match the background. Builds are ad-hoc signed and not notarized, so Gatekeeper blocks them on other Macs until the user clicks Open Anyway in Privacy & Security.
 

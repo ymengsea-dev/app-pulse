@@ -8,15 +8,15 @@ Requires macOS 15 or later, Xcode, and [XcodeGen](https://github.com/yonaskolb/X
 
 ```sh
 xcodegen generate
-xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -configuration Release -derivedDataPath build build
-open build/Build/Products/Release/AppPulse.app
+xcodebuild -project AppPulse.xcodeproj -scheme AppPulse build
+open "$(xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -showBuildSettings 2>/dev/null | sed -n 's/^ *BUILT_PRODUCTS_DIR = //p')/AppPulse.app"
 ```
 
 ## Test
 
 ```sh
 xcodegen generate
-xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -derivedDataPath build test
+xcodebuild test -project AppPulse.xcodeproj -scheme AppPulse
 ```
 
 ## Limits
