@@ -15,7 +15,8 @@ open build/Build/Products/Release/AppPulse.app
 ## Test
 
 ```sh
-swift test --package-path Packages/AppPulseKit
+xcodegen generate
+xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -derivedDataPath build test
 ```
 
 ## Limits

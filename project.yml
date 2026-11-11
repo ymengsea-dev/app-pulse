@@ -4,22 +4,14 @@ options:
   deploymentTarget:
     macOS: "15.0"
   createIntermediateGroups: true
-packages:
-  AppPulseKit:
-    path: Packages/AppPulseKit
 targets:
   AppPulse:
     type: application
     platform: macOS
     sources:
-      - App
-    dependencies:
-      - package: AppPulseKit
-        product: Application
-      - package: AppPulseKit
-        product: Platform
-      - package: AppPulseKit
-        product: Presentation
+      - path: AppPulse
+        excludes:
+          - Resources/AppIcon.svg
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: local.apppulse.AppPulse
@@ -36,10 +28,30 @@ targets:
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: ""
+  AppPulseTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: AppPulseTests
+        excludes:
+          - Fixtures/*.txt
+    dependencies:
+      - target: AppPulse
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: local.apppulse.AppPulseTests
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
 schemes:
   AppPulse:
     build:
       targets:
         AppPulse: all
+        AppPulseTests: [test]
     run:
       config: Debug
+    test:
+      targets:
+        - AppPulseTests

@@ -9,8 +9,8 @@ Swift 6 with strict concurrency, SwiftUI, AppKit (icons, quitting apps), macOS 1
 ## Commands
 
 ```sh
-swift test --package-path Packages/AppPulseKit   # all unit tests
 xcodegen generate                                # regenerate AppPulse.xcodeproj
+xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -derivedDataPath build test   # all unit tests
 xcodebuild -project AppPulse.xcodeproj -scheme AppPulse -configuration Debug -derivedDataPath build build
 open build/Build/Products/Debug/AppPulse.app
 
@@ -23,21 +23,34 @@ The DMG window background is drawn by `scripts/dmg/make_background.py` with the 
 
 ## Architecture
 
-Clean Architecture with MVVM in the UI. Each layer is a target in `Packages/AppPulseKit`. SwiftPM can still see modules a target does not declare, so `Tests/DomainTests/ArchitectureTests.swift` enforces the import rules below.
+Clean Architecture with MVVM in the UI, laid out like Spacera: one app target and one test target. The layers are folders in the same module, so the compiler does not keep them apart. `AppPulseTests/ArchitectureTests.swift` reads the folders and fails when a layer uses a type from a layer it must not depend on.
+
+```
+AppPulse/
+  App/          AppPulseApp, CompositionRoot, RootView
+  Core/
+    Domain/       entities, ports (protocols), pure rules
+    Application/  MonitoringEngine, DestinationHistory, QuitAppUseCase
+    Platform/     OS adapters
+  Features/     Overview/, AppDetail/, Background/ (View + ViewModel each)
+  Shared/       Components/, Theme/, Formatting/, Models/, MonitorStore
+  Resources/    Assets.xcassets, AppIcon.svg (not copied into the app)
+AppPulseTests/  Core/, Features/, Fixtures/, ArchitectureTests
+```
 
 ```
 Presentation ──> Application ──> Domain <── Platform
 App (composition root) wires Platform implementations into Application
 ```
 
-- `Domain`: entities, ports (protocols), pure rules. Foundation only.
-- `Application`: `MonitoringEngine` (sampling loop), `DestinationHistory`, `QuitAppUseCase`. Imports `Domain` only.
-- `Platform`: OS adapters. Imports `Domain` and system frameworks only.
-- `Presentation`: SwiftUI views and view models. Never imports `Platform`.
+- `Domain` (`Core/Domain`): Foundation only. Uses no other layer.
+- `Application` (`Core/Application`): uses `Domain` only.
+- `Platform` (`Core/Platform`): uses `Domain` and system frameworks only.
+- Presentation (`Features`, `Shared`, `App/RootView.swift`): SwiftUI views and view models. Never uses `Platform`.
 - `App/CompositionRoot.swift`: the only place concrete types are chosen.
 
 Rules:
-- New OS data source: add a port in `Domain/Ports` and an adapter in `Platform`. Do not call OS APIs from other layers.
+- New OS data source: add a port in `Core/Domain/Ports` and an adapter in `Core/Platform`. Do not call OS APIs from other layers.
 - A port returns data or throws. The engine turns a throw into `MetricStatus.unavailable` for that metric only. Never crash on bad OS data.
 - Counter deltas go through `RateCalculator`. Do not write new delta logic.
 - No database, DI framework, or third-party dependency without a clear need.
@@ -64,7 +77,7 @@ Destination history stays in memory for the session. Nothing is saved or sent an
 
 ## UI
 
-Follow the `warm-editorial-ui` skill. Use only `Theme` tokens. Each page leads with one plain answer. Use the `hand-drawn-matte-vector` skill for the app icon and artwork. The icon's editable master is `Design/AppIcon.svg`.
+Follow the `warm-editorial-ui` skill. Use only `Theme` tokens. Each page leads with one plain answer. Use the `hand-drawn-matte-vector` skill for the app icon and artwork. The icon's editable master is `AppPulse/Resources/AppIcon.svg`.
 
 An app's page follows the sidebar metric it was opened from (`AppRoute`). Memory, CPU, and GPU show that metric's process breakdown. Only Network shows connections.
 
